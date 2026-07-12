@@ -1,0 +1,57 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+
+jobs:
+  fnd-000-environment-checks:
+    name: FND-000 environment & partition capability checks
+    runs-on: ubuntu-latest
+    services:
+      postgres:
+        image: postgres:16
+        env:
+          POSTGRES_USER: fivemin
+          POSTGRES_PASSWORD: fivemin
+          POSTGRES_DB: fivemin_dev
+        ports:
+          - 5432:5432
+        options: >-
+          --health-cmd "pg_isready -U fivemin -d fivemin_dev"
+          --health-interval 5s
+          --health-timeout 5s
+          --health-retries 10
+    env:
+      DATABASE_URL: postgres://fivemin:fivemin@localhost:5432/fivemin_dev
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Install environment check dependencies
+        working-directory: scripts/dev
+        run: npm ci
+
+      - name: Environment smoke test (PostgreSQL 16 + pg-boss)
+        working-directory: scripts/dev
+        run: node smoke-test.mjs
+
+      - name: Partition capability test
+        working-directory: scripts/dev
+        run: node partition-test.mjs
+
+  # Reserved pipeline stage. FND-003 introduces migrations/ and FND-006
+  # introduces the guardrail scanners (no-float, schema write, superseded,
+  # UTC, dependency allowlist, OpenAPI). This job intentionally does
+  # nothing yet so the workflow structure does not need to be reshaped
+  # when those tasks land.
+  migration-and-integration-placeholder:
+    name: Migration validation & integration tests (reserved)
+    runs-on: ubuntu-latest
+    needs: fnd-000-environment-checks
+    steps:
+      - run: echo "No migrations exist yet (FND-003/FND-004). Placeholder reserved for future Foundation tasks."

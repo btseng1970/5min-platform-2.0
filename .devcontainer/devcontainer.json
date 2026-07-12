@@ -1,0 +1,11 @@
+{
+  "name": "5min-platform-2.0",
+  "dockerComposeFile": "../docker-compose.yml",
+  "service": "app",
+  "workspaceFolder": "/workspace",
+  "shutdownAction": "stopCompose",
+  "postCreateCommand": "bash scripts/dev/devcontainer-postcreate.sh",
+  "remoteEnv": {
+    "DATABASE_URL": "postgres://fivemin:fivemin@postgres:5432/fivemin_dev"
+  }
+}

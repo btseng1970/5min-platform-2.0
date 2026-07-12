@@ -1,0 +1,11 @@
+{
+  "name": "fivemin-dev-env-checks",
+  "private": true,
+  "version": "0.0.0",
+  "type": "module",
+  "description": "FND-000 environment smoke test and partition capability test scripts. Not application code.",
+  "dependencies": {
+    "pg": "^8.22.0",
+    "pg-boss": "^12.26.0"
+  }
+}
