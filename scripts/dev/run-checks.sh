@@ -5,7 +5,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/../.." && pwd)"
 cd "$ROOT_DIR"
 
-export DATABASE_URL="${DATABASE_URL:-postgres://fivemin:fivemin@localhost:5432/fivemin_dev}"
+export DATABASE_URL="${DATABASE_URL:-postgres://fivemin:fivemin@localhost:55432/fivemin_dev}"
 
 pushd scripts/dev > /dev/null
 npm ci
