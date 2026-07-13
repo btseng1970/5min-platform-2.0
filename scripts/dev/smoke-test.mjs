@@ -1,7 +1,7 @@
 // FND-000 environment smoke test: PostgreSQL 16 reachable + pg-boss (ADR-000 queue) can start.
 // Not application code — no domain schema, no business logic.
 import pg from 'pg';
-import PgBoss from 'pg-boss';
+import { PgBoss } from 'pg-boss';
 
 const { Client } = pg;
 const connectionString = process.env.DATABASE_URL;
