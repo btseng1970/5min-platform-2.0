@@ -1,0 +1,32 @@
+{
+  "name": "5min-platform-2.0",
+  "private": true,
+  "packageManager": "npm@11.9.0",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "workspaces": [
+    "apps/*",
+    "packages/shared/*"
+  ],
+  "scripts": {
+    "dev:api": "npm run start:dev --workspace apps/api",
+    "dev:web": "npm run dev --workspace apps/web",
+    "dev:admin": "npm run dev --workspace apps/admin",
+    "dev:worker": "npm run build --workspace apps/worker && npm run start --workspace apps/worker",
+    "build": "npm run build --workspaces --if-present",
+    "lint": "eslint .",
+    "test": "npm run test --workspaces --if-present"
+  },
+  "devDependencies": {
+    "typescript": "6.0.3",
+    "eslint": "10.7.0",
+    "typescript-eslint": "8.64.0",
+    "eslint-config-prettier": "10.1.8",
+    "prettier": "3.9.5",
+    "@types/node": "24.13.3",
+    "jest": "30.4.2",
+    "ts-jest": "29.4.11",
+    "@types/jest": "30.0.0"
+  }
+}
