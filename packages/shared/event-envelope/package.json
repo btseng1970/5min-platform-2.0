@@ -1,0 +1,9 @@
+{
+  "name": "event-envelope",
+  "private": true,
+  "version": "0.0.1",
+  "engines": {
+    "node": ">=24 <25"
+  },
+  "main": "src/index.ts"
+}
