@@ -7,7 +7,8 @@
   },
   "workspaces": [
     "apps/*",
-    "packages/shared/*"
+    "packages/shared/*",
+    "packages/domain/*"
   ],
   "scripts": {
     "dev:api": "npm run start:dev --workspace apps/api",
@@ -16,6 +17,7 @@
     "dev:worker": "npm run build --workspace apps/worker && npm run start --workspace apps/worker",
     "build": "npm run build --workspaces --if-present",
     "lint": "eslint .",
+    "test:architecture": "node tests/architecture/run-architecture-tests.mjs",
     "test": "npm run test --workspaces --if-present"
   },
   "devDependencies": {
@@ -27,6 +29,7 @@
     "@types/node": "24.13.3",
     "jest": "30.4.2",
     "ts-jest": "29.4.11",
-    "@types/jest": "30.0.0"
+    "@types/jest": "30.0.0",
+    "dependency-cruiser": "18.1.0"
   }
 }
