@@ -18,7 +18,13 @@
     "build": "npm run build --workspaces --if-present",
     "lint": "eslint .",
     "test:architecture": "node tests/architecture/run-architecture-tests.mjs",
-    "test": "npm run test --workspaces --if-present"
+    "test": "npm run test --workspaces --if-present",
+    "migrate:validate": "node scripts/migrate/validate.mjs",
+    "migrate:test": "node scripts/migrate/run-validation-tests.mjs",
+    "migrate:create": "node scripts/migrate/create.mjs",
+    "migrate:up": "node scripts/migrate/up.mjs",
+    "migrate:down": "node scripts/migrate/down.mjs",
+    "migrate:redo": "node scripts/migrate/redo.mjs"
   },
   "devDependencies": {
     "typescript": "6.0.3",
@@ -30,6 +36,8 @@
     "jest": "30.4.2",
     "ts-jest": "29.4.11",
     "@types/jest": "30.0.0",
-    "dependency-cruiser": "18.1.0"
+    "dependency-cruiser": "18.1.0",
+    "node-pg-migrate": "8.0.4",
+    "pg": "8.22.0"
   }
 }
