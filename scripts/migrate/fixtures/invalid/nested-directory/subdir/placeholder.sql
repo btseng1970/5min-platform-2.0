@@ -1,0 +1,4 @@
+-- Negative fixture placeholder. The validator never inspects this file's
+-- content — its only purpose is to let git track the parent "subdir"
+-- directory, which is itself the violation (MIG001_UNEXPECTED_DIRECTORY):
+-- no subdirectory is permitted under migrations/.
