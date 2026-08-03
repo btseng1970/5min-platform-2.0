@@ -21,6 +21,7 @@ async function bootstrap() {
   loadDevelopmentEnvIfPresent();
   const app = await NestFactory.create(AppModule);
   app.useGlobalFilters(new CanonicalExceptionFilter());
+  app.setGlobalPrefix('api/v1', { exclude: ['healthz'] });
   const port = process.env.PORT ?? 3000;
   await app.listen(port);
   console.log(`apps/api listening on port ${port}`);

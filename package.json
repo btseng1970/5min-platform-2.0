@@ -24,7 +24,8 @@
     "migrate:create": "node scripts/migrate/create.mjs",
     "migrate:up": "node scripts/migrate/up.mjs",
     "migrate:down": "node scripts/migrate/down.mjs",
-    "migrate:redo": "node scripts/migrate/redo.mjs"
+    "migrate:redo": "node scripts/migrate/redo.mjs",
+    "seed": "node scripts/seed/run-seed.mjs"
   },
   "devDependencies": {
     "typescript": "6.0.3",

@@ -22,7 +22,8 @@
     "money": "*",
     "time": "*",
     "@5min/shared-flags": "*",
-    "@5min/shared-db": "*"
+    "@5min/shared-db": "*",
+    "@5min/domain-campaign": "*"
   },
   "devDependencies": {
     "@nestjs/testing": "11.1.28",
