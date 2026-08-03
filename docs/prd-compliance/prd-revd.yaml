@@ -1,0 +1,657 @@
+# Draft planning artifact only — NOT a repository file.
+# Produced by the Prototype Acceleration Planning Gate; amended per Human Review's
+# five blocking-inconsistency corrections (second pass).
+# Mirrors the field shape proposed for the future repository file
+# docs/prd-compliance/prd-revd.yaml (see /tmp/5min-prototype-acceleration.review.md §10).
+#
+# This file is NOT a pure PRD-requirements list. Each entry carries requirement_class:
+#   PRODUCT               - requires a direct PRD source
+#   ARCHITECTURE          - may cite SAD/TDS/Codex Development Specification
+#   SECURITY              - may cite repository constitution (CLAUDE.md), ADR, SAD, or TDS
+#   PROTOTYPE_GOVERNANCE  - a newly adopted Prototype planning rule, not sourced from PRD/SAD/TDS
+#
+# The single `status` field from the prior draft is replaced by four independent
+# dimensions (implementation_status, automated_status, demo_status, disposition) —
+# see the planning report's §10 for full rules. No entry below has begun
+# implementation: implementation_status is NOT_STARTED, automated_status and
+# demo_status are PENDING or NOT_REQUIRED, disposition is ACTIVE, for every entry.
+# This gate performed no implementation of any kind.
+#
+# All API routes below use only TDS-authoritative prefixes: /api/v1/... (member-facing),
+# /admin/api/v1/... (admin), /internal/api/v1/... (internal). No `*_public` schema
+# dependency remains anywhere below — FND-004 creates no `<context>_public` schema
+# (see the planning report's §6 read-composition note); reads are composed via
+# in-process domain-service interfaces, not cross-schema SQL or a `*_public` view.
+
+schema_version: "draft-2"
+generated_by: "Prototype Acceleration Planning Gate (amended, second pass)"
+requirements:
+
+  - requirement_id: PRD-PROT-CMP-001
+    title: "Campaign is configurable (status lifecycle: Draft/Active/Ending/Archived/Hidden)"
+    requirement_class: "PRODUCT"
+    source_document: "PRD v1.1 Final Rev D"
+    source_section: "2.6 IP 素材生命週期 (Campaign.status)"
+    source_page: null
+    priority: "P0"
+    prototype_required: true
+    owning_context: "campaign"
+    user_journey: "PROTO-001 step 1"
+    api_contracts: ["GET /api/v1/campaigns/current"]
+    implementation_paths: []
+    acceptance_tests:
+      - "Contract test: campaign.status transitions Draft->Active->Ending->Archived->Hidden are all representable"
+    automated_evidence: []
+    demo_evidence: []
+    implementation_status: "NOT_STARTED"
+    automated_status: "PENDING"
+    demo_status: "NOT_REQUIRED"
+    disposition: "ACTIVE"
+    deferred_reason: null
+    waiver_owner: null
+    waiver_expiry: null
+    last_verified_commit: null
+
+  - requirement_id: PRD-PROT-CMP-002
+    title: "Current campaign can be displayed"
+    requirement_class: "PRODUCT"
+    source_document: "PRD v1.1 Final Rev D"
+    source_section: "1 現況重點 / 2.4 Platform Capability Map (三層架構 / 本期 campaign concept, lines 215, 320)"
+    source_page: null
+    priority: "P0"
+    prototype_required: true
+    owning_context: "campaign"
+    user_journey: "PROTO-001 step 1"
+    api_contracts: ["GET /api/v1/campaigns/current"]
+    implementation_paths: []
+    acceptance_tests:
+      - "Contract test: GET /api/v1/campaigns/current returns 200 with the one configured TW demo campaign"
+    automated_evidence: []
+    demo_evidence: []
+    implementation_status: "NOT_STARTED"
+    automated_status: "PENDING"
+    demo_status: "NOT_REQUIRED"
+    disposition: "ACTIVE"
+    deferred_reason: null
+    waiver_owner: null
+    waiver_expiry: null
+    last_verified_commit: null
+
+  - requirement_id: PRD-PROT-MEM-001
+    title: "Demo member identity (Prototype adaptation of real member binding)"
+    requirement_class: "PROTOTYPE_GOVERNANCE"
+    source_document: "SAD v1.0 RevC.1"
+    source_section: "28.7 Major M2: PendingGrant for Anonymous/Unregistered QR Scan (adapted for Prototype; not a direct PRD/production requirement)"
+    source_page: null
+    priority: "P0"
+    prototype_required: true
+    owning_context: "crm"
+    user_journey: "PROTO-001 step 2"
+    api_contracts: []
+    implementation_paths: []
+    acceptance_tests:
+      - "Unit test: deterministic seed/session tooling injects a stable demo member_id with no public or internal API route added"
+    automated_evidence: []
+    demo_evidence: []
+    implementation_status: "NOT_STARTED"
+    automated_status: "PENDING"
+    demo_status: "NOT_REQUIRED"
+    disposition: "ACTIVE"
+    deferred_reason: "Exact seed/session injection mechanism to be fixed in Week 1/2 design; no public API route is authorized for this requirement (see planning report §7 Real Core and Stub Boundary, Member Identity Provider row)."
+    waiver_owner: null
+    waiver_expiry: null
+    last_verified_commit: null
+
+  - requirement_id: PRD-PROT-QR-001
+    title: "Signed / non-enumerable demo QR contract"
+    requirement_class: "SECURITY"
+    source_document: "PRD v1.1 Final Rev D"
+    source_section: "2.5 掃碼中台與開獎引擎 (生成端安全 — generation-side security control, Phase 1 上線驗收條件)"
+    source_page: null
+    priority: "P0"
+    prototype_required: true
+    owning_context: "qr"
+    user_journey: "PROTO-001 step 3"
+    api_contracts: ["POST /api/v1/qr/scan"]
+    implementation_paths: []
+    acceptance_tests:
+      - "Static test: demo QR code values are generated via cryptographic signing, never sequential/derivable"
+      - "Unit test: code_hash is stored, no plaintext code_value persisted (TDS qr.code table)"
+    automated_evidence: []
+    demo_evidence: []
+    implementation_status: "NOT_STARTED"
+    automated_status: "PENDING"
+    demo_status: "NOT_REQUIRED"
+    disposition: "ACTIVE"
+    deferred_reason: null
+    waiver_owner: null
+    waiver_expiry: null
+    last_verified_commit: null
+
+  - requirement_id: PRD-PROT-QR-002
+    title: "One-code-one-successful-use"
+    requirement_class: "PRODUCT"
+    source_document: "PRD v1.1 Final Rev D"
+    source_section: "2.5 行為端風控與事件規格 (一碼一用 row, lines 416-419); enforcement mechanism per TDS qr.code atomic state transition"
+    source_page: null
+    priority: "P0"
+    prototype_required: true
+    owning_context: "qr"
+    user_journey: "PROTO-001 step 4"
+    api_contracts: ["POST /api/v1/qr/scan"]
+    implementation_paths: []
+    acceptance_tests:
+      - "Concurrency test: N concurrent scans of the same qr_code_id yield exactly one success"
+      - "Integration test: atomic UPDATE ... WHERE state=ACTIVE is the only successful-consumption path"
+    automated_evidence: []
+    demo_evidence: []
+    implementation_status: "NOT_STARTED"
+    automated_status: "PENDING"
+    demo_status: "NOT_REQUIRED"
+    disposition: "ACTIVE"
+    deferred_reason: null
+    waiver_owner: null
+    waiver_expiry: null
+    last_verified_commit: null
+
+  - requirement_id: PRD-PROT-QR-003
+    title: "Repeated invalid/used scan does not grant again"
+    requirement_class: "PRODUCT"
+    source_document: "PRD v1.1 Final Rev D"
+    source_section: "2.5 行為端風控與事件規格 (一碼一用 row)"
+    source_page: null
+    priority: "P0"
+    prototype_required: true
+    owning_context: "qr"
+    user_journey: "PROTO-001 step 4"
+    api_contracts: ["POST /api/v1/qr/scan"]
+    implementation_paths: []
+    acceptance_tests:
+      - "Integration test: second scan of a used code returns STATE_CONFLICT (409), no second grant issued"
+      - "Integration test: scan_event is still recorded as a fact even on rejection (TDS qr.scan_event)"
+    automated_evidence: []
+    demo_evidence: []
+    implementation_status: "NOT_STARTED"
+    automated_status: "PENDING"
+    demo_status: "NOT_REQUIRED"
+    disposition: "ACTIVE"
+    deferred_reason: null
+    waiver_owner: null
+    waiver_expiry: null
+    last_verified_commit: null
+
+  - requirement_id: PRD-PROT-QR-004
+    title: "Scan idempotency"
+    requirement_class: "ARCHITECTURE"
+    source_document: "SAD v1.0 RevC.1"
+    source_section: "Idempotency Store table (request-level idempotency at BFF, line 214); PRD line 447 names the idempotency_key field"
+    source_page: null
+    priority: "P0"
+    prototype_required: true
+    owning_context: "qr"
+    user_journey: "PROTO-001 step 4"
+    api_contracts: ["POST /api/v1/qr/scan"]
+    implementation_paths: []
+    acceptance_tests:
+      - "Replay test: repeated scan webhook with the same idempotency_key does not double-ingest"
+    automated_evidence: []
+    demo_evidence: []
+    implementation_status: "NOT_STARTED"
+    automated_status: "PENDING"
+    demo_status: "NOT_REQUIRED"
+    disposition: "ACTIVE"
+    deferred_reason: null
+    waiver_owner: null
+    waiver_expiry: null
+    last_verified_commit: null
+
+  - requirement_id: PRD-PROT-REW-001
+    title: "Draw idempotency"
+    requirement_class: "ARCHITECTURE"
+    source_document: "PRD v1.1 Final Rev D + SAD v1.0 RevC.1"
+    source_section: "PRD 2.10 抽獎狀態機與關鍵規則 (client_request_id rule, line 710); mechanism per SAD lines 586-587"
+    source_page: null
+    priority: "P0"
+    prototype_required: true
+    owning_context: "reward"
+    user_journey: "PROTO-001 step 5"
+    api_contracts: ["POST /api/v1/reward/draws"]
+    implementation_paths: []
+    acceptance_tests:
+      - "Replay test: same member_id+campaign_id+client_request_id returns the identical prior draw result, never a second draw"
+    automated_evidence: []
+    demo_evidence: []
+    implementation_status: "NOT_STARTED"
+    automated_status: "PENDING"
+    demo_status: "NOT_REQUIRED"
+    disposition: "ACTIVE"
+    deferred_reason: null
+    waiver_owner: null
+    waiver_expiry: null
+    last_verified_commit: null
+
+  - requirement_id: PRD-PROT-REW-002
+    title: "DrawReserved-time immutable result"
+    requirement_class: "ARCHITECTURE"
+    source_document: "SAD v1.0 RevC.1"
+    source_section: "28.9 (binding resolution: randomness decided at DrawReserved time, lines 690, 694)"
+    source_page: null
+    priority: "P0"
+    prototype_required: true
+    owning_context: "reward"
+    user_journey: "PROTO-001 steps 6-7"
+    api_contracts: ["POST /api/v1/reward/draws", "GET /api/v1/reward/draws/{draw_id}"]
+    implementation_paths: []
+    acceptance_tests:
+      - "Integration test: draw_result recorded at DrawReserved matches the result later displayed/settled, byte for byte"
+    automated_evidence: []
+    demo_evidence: []
+    implementation_status: "NOT_STARTED"
+    automated_status: "PENDING"
+    demo_status: "NOT_REQUIRED"
+    disposition: "ACTIVE"
+    deferred_reason: null
+    waiver_owner: null
+    waiver_expiry: null
+    last_verified_commit: null
+
+  - requirement_id: PRD-PROT-REW-003
+    title: "Settlement/worker cannot re-randomize"
+    requirement_class: "ARCHITECTURE"
+    source_document: "SAD v1.0 RevC.1"
+    source_section: "28.9 (Worker settlement executes the already-decided result only, line 690)"
+    source_page: null
+    priority: "P0"
+    prototype_required: true
+    owning_context: "reward"
+    user_journey: "PROTO-001 steps 6-8"
+    api_contracts: ["POST /api/v1/reward/draws"]
+    implementation_paths: []
+    acceptance_tests:
+      - "Static test: no random-number generation call exists anywhere in the settlement/worker code path"
+    automated_evidence: []
+    demo_evidence: []
+    implementation_status: "NOT_STARTED"
+    automated_status: "PENDING"
+    demo_status: "NOT_REQUIRED"
+    disposition: "ACTIVE"
+    deferred_reason: null
+    waiver_owner: null
+    waiver_expiry: null
+    last_verified_commit: null
+
+  - requirement_id: PRD-PROT-REW-004
+    title: "Inventory oversell prevention appropriate to the Prototype"
+    requirement_class: "PRODUCT"
+    source_document: "PRD v1.1 Final Rev D"
+    source_section: "2.10 Reward Fairness & Audit (Oversell Prevention row, lines 701-702)"
+    source_page: null
+    priority: "P0"
+    prototype_required: true
+    owning_context: "reward"
+    user_journey: "PROTO-001 steps 5-8"
+    api_contracts: ["POST /api/v1/reward/draws"]
+    implementation_paths: []
+    acceptance_tests:
+      - "Concurrency test: same prize_item_id is never held by two concurrent DrawReserved reservations"
+    automated_evidence: []
+    demo_evidence: []
+    implementation_status: "NOT_STARTED"
+    automated_status: "PENDING"
+    demo_status: "NOT_REQUIRED"
+    disposition: "ACTIVE"
+    deferred_reason: null
+    waiver_owner: null
+    waiver_expiry: null
+    last_verified_commit: null
+
+  - requirement_id: PRD-PROT-WAL-001
+    title: "Append-only wallet posting"
+    requirement_class: "ARCHITECTURE"
+    source_document: "PRD v1.1 Final Rev D + TDS v1.0 RevB Final Errata-of-Errata"
+    source_section: "PRD line 255 (不可覆寫 Ledger rule); TDS wallet.ledger_entry table definition (append-only, no update/delete, line 351)"
+    source_page: null
+    priority: "P0"
+    prototype_required: true
+    owning_context: "wallet"
+    user_journey: "PROTO-001 step 8"
+    api_contracts: ["POST /api/v1/reward/draws (triggers internal wallet posting; no direct public wallet-write route in Prototype)"]
+    implementation_paths: []
+    acceptance_tests:
+      - "Static test: no UPDATE or DELETE statement targets wallet.ledger_entry anywhere in the codebase"
+      - "Unique-constraint test: unique(source_event_id, entry_type) rejects a duplicate posting attempt"
+    automated_evidence: []
+    demo_evidence: []
+    implementation_status: "NOT_STARTED"
+    automated_status: "PENDING"
+    demo_status: "NOT_REQUIRED"
+    disposition: "ACTIVE"
+    deferred_reason: null
+    waiver_owner: null
+    waiver_expiry: null
+    last_verified_commit: null
+
+  - requirement_id: PRD-PROT-WAL-002
+    title: "Wallet current summary display"
+    requirement_class: "PRODUCT"
+    source_document: "PRD v1.1 Final Rev D"
+    source_section: "會員中心 2.0 必備卡片 (我的點數 row, lines 520-530); read composed via WalletService domain-service interface, no *_public view (FND-004 creates none)"
+    source_page: null
+    priority: "P0"
+    prototype_required: true
+    owning_context: "wallet"
+    user_journey: "PROTO-001 step 9"
+    api_contracts: ["GET /api/v1/wallet"]
+    implementation_paths: []
+    acceptance_tests:
+      - "Contract test: GET /api/v1/wallet reads only via the WalletService domain interface (own-schema read of wallet.*), never a cross-schema SQL join or *_public view"
+    automated_evidence: []
+    demo_evidence: []
+    implementation_status: "NOT_STARTED"
+    automated_status: "PENDING"
+    demo_status: "NOT_REQUIRED"
+    disposition: "ACTIVE"
+    deferred_reason: null
+    waiver_owner: null
+    waiver_expiry: null
+    last_verified_commit: null
+
+  - requirement_id: PRD-PROT-DATA-001
+    title: "Integer points/money (no float/double)"
+    requirement_class: "SECURITY"
+    source_document: "CLAUDE.md (repository constitution) + Codex Development Specification v1.0 RevB.1"
+    source_section: "CLAUDE.md GA block; Codex Spec FND-007 (shared value objects, line 215)"
+    source_page: null
+    priority: "P0"
+    prototype_required: true
+    owning_context: "platform"
+    user_journey: "all PROTO-001 steps involving points/money"
+    api_contracts: []
+    implementation_paths: []
+    acceptance_tests:
+      - "Static test: no-float scanner reports zero violations across wallet/reward code paths"
+    automated_evidence: []
+    demo_evidence: []
+    implementation_status: "NOT_STARTED"
+    automated_status: "PENDING"
+    demo_status: "NOT_REQUIRED"
+    disposition: "ACTIVE"
+    deferred_reason: null
+    waiver_owner: null
+    waiver_expiry: null
+    last_verified_commit: null
+
+  - requirement_id: PRD-PROT-DATA-002
+    title: "UTC timestamps only"
+    requirement_class: "SECURITY"
+    source_document: "CLAUDE.md (repository constitution)"
+    source_section: "CLAUDE.md GA block"
+    source_page: null
+    priority: "P0"
+    prototype_required: true
+    owning_context: "platform"
+    user_journey: "all PROTO-001 steps"
+    api_contracts: []
+    implementation_paths: []
+    acceptance_tests:
+      - "Static test: UTC lint scanner reports zero local-timezone-arithmetic violations"
+    automated_evidence: []
+    demo_evidence: []
+    implementation_status: "NOT_STARTED"
+    automated_status: "PENDING"
+    demo_status: "NOT_REQUIRED"
+    disposition: "ACTIVE"
+    deferred_reason: null
+    waiver_owner: null
+    waiver_expiry: null
+    last_verified_commit: null
+
+  - requirement_id: PRD-PROT-API-001
+    title: "correlation_id propagation (API to domain to outbox to log)"
+    requirement_class: "ARCHITECTURE"
+    source_document: "SAD v1.0 RevC.1 + Codex Development Specification v1.0 RevB.1"
+    source_section: "SAD line 437 (all user-facing flows propagate correlation_id); Codex Spec FND-010 (line 218)"
+    source_page: null
+    priority: "P0"
+    prototype_required: true
+    owning_context: "platform"
+    user_journey: "all PROTO-001 steps"
+    api_contracts: []
+    implementation_paths: []
+    acceptance_tests:
+      - "Integration test: one API request's correlation_id is present, unchanged, in its resulting event_outbox row and log line"
+    automated_evidence: []
+    demo_evidence: []
+    implementation_status: "NOT_STARTED"
+    automated_status: "PENDING"
+    demo_status: "NOT_REQUIRED"
+    disposition: "ACTIVE"
+    deferred_reason: null
+    waiver_owner: null
+    waiver_expiry: null
+    last_verified_commit: null
+
+  - requirement_id: PRD-PROT-API-002
+    title: "Canonical API error model"
+    requirement_class: "ARCHITECTURE"
+    source_document: "TDS v1.0 RevB Final Errata-of-Errata"
+    source_section: "2.3 Common Error Model (lines 134-144, 191)"
+    source_page: null
+    priority: "P0"
+    prototype_required: true
+    owning_context: "platform"
+    user_journey: "all PROTO-001 steps"
+    api_contracts: []
+    implementation_paths: []
+    acceptance_tests:
+      - "Contract test: error responses match {error_code, message, details, correlation_id, retry_after_seconds} exactly, for VALIDATION_FAILED/RESOURCE_NOT_FOUND/IDEMPOTENCY_CONFLICT/STATE_CONFLICT/RESOURCE_LOCKED"
+    automated_evidence: []
+    demo_evidence: []
+    implementation_status: "NOT_STARTED"
+    automated_status: "PENDING"
+    demo_status: "NOT_REQUIRED"
+    disposition: "ACTIVE"
+    deferred_reason: null
+    waiver_owner: null
+    waiver_expiry: null
+    last_verified_commit: null
+
+  - requirement_id: PRD-PROT-API-003
+    title: "Feature flags can disable unfinished flows"
+    requirement_class: "PROTOTYPE_GOVERNANCE"
+    source_document: "None — new practice proposed by this Prototype Acceleration Planning Gate"
+    source_section: "Not sourced from PRD/SAD/TDS/Codex Spec; requires explicit Human Review adoption"
+    source_page: null
+    priority: "P0"
+    prototype_required: true
+    owning_context: "platform"
+    user_journey: "all PROTO-001 slices"
+    api_contracts: []
+    implementation_paths: []
+    acceptance_tests:
+      - "Integration test: toggling a slice's feature flag off removes that slice's route/UI entry point without affecting other slices"
+    automated_evidence: []
+    demo_evidence: []
+    implementation_status: "NOT_STARTED"
+    automated_status: "PENDING"
+    demo_status: "NOT_REQUIRED"
+    disposition: "ACTIVE"
+    deferred_reason: "Mechanism (config table vs env var vs flags service) not yet decided by Human Review"
+    waiver_owner: null
+    waiver_expiry: null
+    last_verified_commit: null
+
+  - requirement_id: PRD-PROT-COL-001
+    title: "Collection unlock"
+    requirement_class: "PRODUCT"
+    source_document: "PRD v1.1 Final Rev D"
+    source_section: "2.6 IP Asset Visibility Rule (has_unlocked pseudocode, lines 476-483)"
+    source_page: null
+    priority: "P0"
+    prototype_required: true
+    owning_context: "ip_asset"
+    user_journey: "PROTO-001 step 10"
+    api_contracts: ["GET /api/v1/collection (not explicitly enumerated in TDS's own route table; extrapolated from its /api/v1/<domain> convention, flagged for confirmation at implementation time)"]
+    implementation_paths: []
+    acceptance_tests:
+      - "Integration test: after a PrizeGranted/PointGranted outcome, the corresponding collection item's has_unlocked() becomes true"
+    automated_evidence: []
+    demo_evidence: []
+    implementation_status: "NOT_STARTED"
+    automated_status: "PENDING"
+    demo_status: "NOT_REQUIRED"
+    disposition: "ACTIVE"
+    deferred_reason: null
+    waiver_owner: null
+    waiver_expiry: null
+    last_verified_commit: null
+
+  - requirement_id: PRD-PROT-MEM-002
+    title: "Member-center summary display"
+    requirement_class: "PRODUCT"
+    source_document: "PRD v1.1 Final Rev D"
+    source_section: "會員中心 2.0 必備卡片 (我的點數 / 當期圖鑑 cards, lines 520-530)"
+    source_page: null
+    priority: "P0"
+    prototype_required: true
+    owning_context: "crm"
+    user_journey: "PROTO-001 step 11"
+    api_contracts: ["GET /api/v1/me (TDS line 209, exact)"]
+    implementation_paths: []
+    acceptance_tests:
+      - "Contract test: GET /api/v1/me composes member+wallet+collection summaries via domain-service interfaces (CrmService/WalletService/CollectionService), never a cross-schema SQL join or *_public view"
+    automated_evidence: []
+    demo_evidence: []
+    implementation_status: "NOT_STARTED"
+    automated_status: "PENDING"
+    demo_status: "NOT_REQUIRED"
+    disposition: "ACTIVE"
+    deferred_reason: null
+    waiver_owner: null
+    waiver_expiry: null
+    last_verified_commit: null
+
+  - requirement_id: PRD-PROT-ADM-001
+    title: "Admin traceability by correlation_id"
+    requirement_class: "ARCHITECTURE"
+    source_document: "Codex Development Specification v1.0 RevB.1"
+    source_section: "12 Admin/CMS Epic, ADM-006 Audit log viewer (line 274); no direct PRD source located"
+    source_page: null
+    priority: "P0"
+    prototype_required: true
+    owning_context: "platform"
+    user_journey: "PROTO-001 step 12"
+    api_contracts: ["GET /admin/api/v1/audit-log?correlation_id= (not explicitly enumerated in TDS's own route table; extrapolated from the Admin API prefix and named after ADM-006, flagged for confirmation at implementation time)"]
+    implementation_paths: []
+    acceptance_tests:
+      - "Integration test: one correlation_id retrieves the full PROTO-001 journey's chain of events/records end to end"
+    automated_evidence: []
+    demo_evidence: []
+    implementation_status: "NOT_STARTED"
+    automated_status: "PENDING"
+    demo_status: "NOT_REQUIRED"
+    disposition: "ACTIVE"
+    deferred_reason: null
+    waiver_owner: null
+    waiver_expiry: null
+    last_verified_commit: null
+
+  - requirement_id: PRD-PROT-ARCH-001
+    title: "No direct cross-context writes"
+    requirement_class: "ARCHITECTURE"
+    source_document: "TDS v1.0 RevB Final Errata-of-Errata"
+    source_section: "Cross-schema Write Ban (除 platform.event_outbox 外，一律禁止, lines 1021, 1113)"
+    source_page: null
+    priority: "P0"
+    prototype_required: true
+    owning_context: "platform"
+    user_journey: "all PROTO-001 steps"
+    api_contracts: []
+    implementation_paths: []
+    acceptance_tests:
+      - "Static test: cross-schema-write scanner reports zero violations outside platform.event_outbox"
+    automated_evidence: []
+    demo_evidence: []
+    implementation_status: "NOT_STARTED"
+    automated_status: "PENDING"
+    demo_status: "NOT_REQUIRED"
+    disposition: "ACTIVE"
+    deferred_reason: null
+    waiver_owner: null
+    waiver_expiry: null
+    last_verified_commit: null
+
+  - requirement_id: PRD-PROT-ARCH-002
+    title: "OpenAPI-first implementation"
+    requirement_class: "ARCHITECTURE"
+    source_document: "Codex Development Specification v1.0 RevB.1"
+    source_section: "6 OpenAPI, BFF, and /api/v1/me Freshness Contract (RevB.1 API task rule, line 150)"
+    source_page: null
+    priority: "P0"
+    prototype_required: true
+    owning_context: "platform"
+    user_journey: "all PROTO-001 steps"
+    api_contracts: []
+    implementation_paths: []
+    acceptance_tests:
+      - "CI test: every PROTO-001 route's docs/openapi definition is committed before/with its NestJS route implementation"
+    automated_evidence: []
+    demo_evidence: []
+    implementation_status: "NOT_STARTED"
+    automated_status: "PENDING"
+    demo_status: "NOT_REQUIRED"
+    disposition: "ACTIVE"
+    deferred_reason: null
+    waiver_owner: null
+    waiver_expiry: null
+    last_verified_commit: null
+
+  - requirement_id: PRD-PROT-ARCH-003
+    title: "No direct external provider send from domain code"
+    requirement_class: "ARCHITECTURE"
+    source_document: "SAD v1.0 RevC.1"
+    source_section: "RevB conclusion line: Notification Broker 強制唯一出口 (line 552), adapted for the Prototype stub boundary"
+    source_page: null
+    priority: "P0"
+    prototype_required: true
+    owning_context: "platform"
+    user_journey: "PROTO-001 stub boundary (planning report §7)"
+    api_contracts: []
+    implementation_paths: []
+    acceptance_tests:
+      - "Static test: no domain package directly imports a LINE/Email/SMS/ERP SDK type; only the corresponding stub interface (payment excluded — out of scope, no payment flow in PROTO-001)"
+    automated_evidence: []
+    demo_evidence: []
+    implementation_status: "NOT_STARTED"
+    automated_status: "PENDING"
+    demo_status: "NOT_REQUIRED"
+    disposition: "ACTIVE"
+    deferred_reason: null
+    waiver_owner: null
+    waiver_expiry: null
+    last_verified_commit: null
+
+  - requirement_id: PRD-PROT-DATA-003
+    title: "Demo data contains no production PII"
+    requirement_class: "SECURITY"
+    source_document: "Derived (this Prototype Acceleration Planning Gate) — no verbatim PRD/SAD/TDS sentence states this in these exact words"
+    source_section: "Inferred from Prototype fixed constraints + CLAUDE.md no-production-credential discipline"
+    source_page: null
+    priority: "P0"
+    prototype_required: true
+    owning_context: "platform"
+    user_journey: "PROTO-001 seed/reset (FND-009 minimum subset)"
+    api_contracts: []
+    implementation_paths: []
+    acceptance_tests:
+      - "Static test: seed/reset fixture data contains no real member identifiers, phone numbers, emails, or payment identifiers"
+    automated_evidence: []
+    demo_evidence: []
+    implementation_status: "NOT_STARTED"
+    automated_status: "PENDING"
+    demo_status: "NOT_REQUIRED"
+    disposition: "ACTIVE"
+    deferred_reason: null
+    waiver_owner: null
+    waiver_expiry: null
+    last_verified_commit: null
