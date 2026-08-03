@@ -1,0 +1,248 @@
+openapi: 3.0.3
+info:
+  title: 5min Platform 2.0 — PROTO-001 Walking Skeleton API
+  version: 0.1.0
+  description: >
+    Contract-first OpenAPI definition for PROTO-001's six authoritative
+    member-facing routes (docs/codex-task-packages/PROTO-001.md §7). NestJS
+    route implementation must conform to this document; this file is the
+    source of truth, not the reverse (Codex Development Specification §6).
+    Collection data is composed into GET /api/v1/me for the Prototype;
+    GET /api/v1/collection and GET /admin/api/v1/audit-log remain proposed,
+    unconfirmed routes and are not implemented here.
+
+paths:
+  /api/v1/campaigns/current:
+    get:
+      operationId: getCurrentCampaign
+      summary: Get the current configured TW demo campaign
+      responses:
+        "200":
+          description: The current campaign
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CampaignSummary"
+        "404":
+          $ref: "#/components/responses/CanonicalError"
+
+  /api/v1/qr/scan:
+    post:
+      operationId: scanQrCode
+      summary: Scan a signed demo QR code exactly once
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/QrScanRequest"
+      responses:
+        "200":
+          description: Scan accepted; outcome recorded
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/QrScanResult"
+        "409":
+          description: Code already used, or idempotency conflict
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/CanonicalErrorEnvelope"
+        "404":
+          $ref: "#/components/responses/CanonicalError"
+
+  /api/v1/reward/draws:
+    post:
+      operationId: createDraw
+      summary: Create an idempotent draw command; result fixed at DrawReserved time
+      parameters:
+        - name: Idempotency-Key
+          in: header
+          required: true
+          schema:
+            type: string
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: "#/components/schemas/DrawRequest"
+      responses:
+        "200":
+          description: Draw reserved (or the identical prior result, if replayed)
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DrawResult"
+        "409":
+          $ref: "#/components/responses/CanonicalError"
+
+  /api/v1/reward/draws/{draw_id}:
+    get:
+      operationId: getDraw
+      summary: Query a draw's immutable result
+      parameters:
+        - name: draw_id
+          in: path
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: The draw's result
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/DrawResult"
+        "404":
+          $ref: "#/components/responses/CanonicalError"
+
+  /api/v1/wallet:
+    get:
+      operationId: getWalletSummary
+      summary: Get the demo member's wallet summary (own-schema read via WalletService)
+      responses:
+        "200":
+          description: Wallet summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/WalletSummary"
+
+  /api/v1/me:
+    get:
+      operationId: getMemberCenterSummary
+      summary: Get the composed member-center summary (member + wallet + collection)
+      responses:
+        "200":
+          description: Member-center summary
+          content:
+            application/json:
+              schema:
+                $ref: "#/components/schemas/MemberCenterSummary"
+
+components:
+  responses:
+    CanonicalError:
+      description: Canonical error envelope
+      content:
+        application/json:
+          schema:
+            $ref: "#/components/schemas/CanonicalErrorEnvelope"
+
+  schemas:
+    CanonicalErrorEnvelope:
+      type: object
+      required: [error_code, message, details, correlation_id, retry_after_seconds]
+      properties:
+        error_code:
+          type: string
+          enum:
+            [
+              VALIDATION_FAILED,
+              AUTH_REQUIRED,
+              POLICY_BLOCKED,
+              RESOURCE_NOT_FOUND,
+              IDEMPOTENCY_CONFLICT,
+              STATE_CONFLICT,
+              RESOURCE_LOCKED,
+              RATE_LIMITED,
+              DRAW_PAUSED,
+            ]
+        message:
+          type: string
+        details:
+          type: object
+          nullable: true
+        correlation_id:
+          type: string
+        retry_after_seconds:
+          type: integer
+          nullable: true
+
+    CampaignSummary:
+      type: object
+      required: [campaign_id, name, status]
+      properties:
+        campaign_id:
+          type: string
+        name:
+          type: string
+        status:
+          type: string
+          enum: [Draft, Active, Ending, Archived, Hidden]
+
+    QrScanRequest:
+      type: object
+      required: [code_value, client_request_id]
+      properties:
+        code_value:
+          type: string
+        client_request_id:
+          type: string
+
+    QrScanResult:
+      type: object
+      required: [qr_code_id, state]
+      properties:
+        qr_code_id:
+          type: string
+        state:
+          type: string
+          enum: [USED]
+
+    DrawRequest:
+      type: object
+      required: [campaign_id, client_request_id]
+      properties:
+        campaign_id:
+          type: string
+        client_request_id:
+          type: string
+
+    DrawResult:
+      type: object
+      required: [draw_id, state, draw_result]
+      properties:
+        draw_id:
+          type: string
+        state:
+          type: string
+          enum: [DrawReserved]
+        draw_result:
+          type: object
+          required: [result_type]
+          properties:
+            result_type:
+              type: string
+              enum: [PRIZE, POINT, NO_WIN]
+            prize_tier:
+              type: string
+              nullable: true
+
+    WalletSummary:
+      type: object
+      required: [available_points]
+      properties:
+        available_points:
+          type: integer
+
+    MemberCenterSummary:
+      type: object
+      required: [member_id, wallet_summary, collection]
+      properties:
+        member_id:
+          type: string
+        wallet_summary:
+          $ref: "#/components/schemas/WalletSummary"
+        collection:
+          type: array
+          items:
+            type: object
+            required: [item_id, unlocked]
+            properties:
+              item_id:
+                type: string
+              unlocked:
+                type: boolean

@@ -16,12 +16,20 @@
     "@nestjs/common": "11.1.28",
     "@nestjs/platform-express": "11.1.28",
     "reflect-metadata": "0.2.2",
-    "rxjs": "7.8.2"
+    "rxjs": "7.8.2",
+    "pg": "8.22.0",
+    "errors": "*",
+    "money": "*",
+    "time": "*",
+    "@5min/shared-flags": "*",
+    "@5min/shared-db": "*"
   },
   "devDependencies": {
     "@nestjs/testing": "11.1.28",
     "@nestjs/cli": "11.0.24",
     "supertest": "7.2.2",
-    "@types/supertest": "7.2.1"
+    "@types/supertest": "7.2.1",
+    "@types/express": "5.0.6",
+    "@types/pg": "8.20.3"
   }
 }

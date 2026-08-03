@@ -1,5 +1,5 @@
 {
-  "name": "money",
+  "name": "@5min/shared-flags",
   "private": true,
   "version": "0.0.1",
   "engines": {
