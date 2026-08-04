@@ -5,14 +5,20 @@
 // No production PII of any kind is written by this script.
 
 import pg from "pg";
+import { DEMO_CAMPAIGN_ID, DEMO_MEMBER_ID, DEMO_MEMBER_DISPLAY_NAME } from "test-fixtures";
 
 const { Pool } = pg;
 
 const DEMO_CAMPAIGN = {
-  campaign_id: "demo_campaign_tw_001",
+  campaign_id: DEMO_CAMPAIGN_ID,
   market_id: "TW",
   name: "5min Coffee Demo Campaign (TW)",
   status: "Active",
+};
+
+const DEMO_MEMBER = {
+  member_id: DEMO_MEMBER_ID,
+  display_name: DEMO_MEMBER_DISPLAY_NAME,
 };
 
 async function seedCampaign(pool) {
@@ -29,6 +35,17 @@ async function seedCampaign(pool) {
   console.log(`PASS seed:campaign — ${DEMO_CAMPAIGN.campaign_id}`);
 }
 
+async function seedMember(pool) {
+  await pool.query(
+    `INSERT INTO crm.member (member_id, display_name)
+     VALUES ($1, $2)
+     ON CONFLICT (member_id) DO UPDATE
+       SET display_name = EXCLUDED.display_name`,
+    [DEMO_MEMBER.member_id, DEMO_MEMBER.display_name],
+  );
+  console.log(`PASS seed:member — ${DEMO_MEMBER.member_id}`);
+}
+
 async function main() {
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
@@ -40,6 +57,7 @@ async function main() {
   const pool = new Pool({ connectionString: databaseUrl });
   try {
     await seedCampaign(pool);
+    await seedMember(pool);
     console.log("Seed complete.");
   } finally {
     await pool.end();
