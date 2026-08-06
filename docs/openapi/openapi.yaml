@@ -163,9 +163,11 @@ components:
 
     CampaignSummary:
       type: object
-      required: [campaign_id, name, status]
+      required: [campaign_id, market_id, name, status]
       properties:
         campaign_id:
+          type: string
+        market_id:
           type: string
         name:
           type: string
@@ -175,12 +177,22 @@ components:
 
     QrScanRequest:
       type: object
-      required: [code_value, client_request_id]
+      required: [code, client_request_id]
       properties:
-        code_value:
+        code:
           type: string
+          description: >
+            The raw scanned QR value. Hashed server-side before lookup or
+            storage; never persisted or logged in plaintext.
         client_request_id:
           type: string
+          description: >
+            Caller-generated idempotency key. An exact retry (same
+            client_request_id and code) replays the original result; the
+            same client_request_id with a different code returns
+            IDEMPOTENCY_CONFLICT (409). member_id is never accepted from the
+            caller — it is resolved server-side from the deterministic demo
+            member context.
 
     QrScanResult:
       type: object

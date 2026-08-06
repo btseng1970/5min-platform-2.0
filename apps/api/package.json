@@ -23,7 +23,9 @@
     "time": "*",
     "@5min/shared-flags": "*",
     "@5min/shared-db": "*",
-    "@5min/domain-campaign": "*"
+    "@5min/domain-campaign": "*",
+    "@5min/domain-qr": "*",
+    "test-fixtures": "*"
   },
   "devDependencies": {
     "@nestjs/testing": "11.1.28",

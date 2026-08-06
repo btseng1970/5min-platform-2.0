@@ -6,6 +6,7 @@
 
 import pg from "pg";
 import { DEMO_CAMPAIGN_ID, DEMO_MEMBER_ID, DEMO_MEMBER_DISPLAY_NAME } from "test-fixtures";
+import { HmacQrCodeVerifier, PROTOTYPE_QR_SIGNING_SECRET_FALLBACK } from "@5min/domain-qr";
 
 const { Pool } = pg;
 
@@ -20,6 +21,24 @@ const DEMO_MEMBER = {
   member_id: DEMO_MEMBER_ID,
   display_name: DEMO_MEMBER_DISPLAY_NAME,
 };
+
+const DEMO_QR_CODE_COUNT = 20;
+
+// Same secret-resolution rule as apps/api/src/qr/qr.module.ts: prototype-only,
+// never a production key. The verifier only ever produces a hash — seed
+// tooling never persists the raw value to qr.code, only its hash.
+const verifier = new HmacQrCodeVerifier(process.env.QR_SIGNING_SECRET ?? PROTOTYPE_QR_SIGNING_SECRET_FALLBACK);
+
+function buildDemoQrCodes() {
+  return Array.from({ length: DEMO_QR_CODE_COUNT }, (_, index) => {
+    const sequence = String(index + 1).padStart(3, "0");
+    return {
+      qr_code_id: `demo_qr_tw_${sequence}`,
+      raw_code: `SIGNED-DEMO-QR-TW-${sequence}`,
+      campaign_id: DEMO_CAMPAIGN_ID,
+    };
+  });
+}
 
 async function seedCampaign(pool) {
   await pool.query(
@@ -46,6 +65,31 @@ async function seedMember(pool) {
   console.log(`PASS seed:member — ${DEMO_MEMBER.member_id}`);
 }
 
+async function seedQrCodes(pool) {
+  const demoQrCodes = buildDemoQrCodes();
+  for (const code of demoQrCodes) {
+    const codeHash = verifier.hash(code.raw_code);
+    await pool.query(
+      `INSERT INTO qr.code (qr_code_id, code_hash, campaign_id, status, used_by_member_id, used_at)
+       VALUES ($1, $2, $3, 'Unused', NULL, NULL)
+       ON CONFLICT (qr_code_id) DO UPDATE
+         SET code_hash = EXCLUDED.code_hash,
+             campaign_id = EXCLUDED.campaign_id,
+             status = 'Unused',
+             used_by_member_id = NULL,
+             used_at = NULL`,
+      [code.qr_code_id, codeHash, code.campaign_id],
+    );
+  }
+  console.log(`PASS seed:qr-codes — ${demoQrCodes.length} deterministic demo codes reset to Unused`);
+  // Operator-facing enrollment output only, produced once at seed time — not
+  // part of the runtime request-handling path, which never logs raw values.
+  console.log("Demo QR raw values for manual scanning (seed-time only, never persisted in plaintext):");
+  for (const code of demoQrCodes) {
+    console.log(`  ${code.qr_code_id}: ${code.raw_code}`);
+  }
+}
+
 async function main() {
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
@@ -58,6 +102,7 @@ async function main() {
   try {
     await seedCampaign(pool);
     await seedMember(pool);
+    await seedQrCodes(pool);
     console.log("Seed complete.");
   } finally {
     await pool.end();
