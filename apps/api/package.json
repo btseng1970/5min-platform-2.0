@@ -25,6 +25,7 @@
     "@5min/shared-db": "*",
     "@5min/domain-campaign": "*",
     "@5min/domain-qr": "*",
+    "@5min/domain-reward": "*",
     "test-fixtures": "*"
   },
   "devDependencies": {

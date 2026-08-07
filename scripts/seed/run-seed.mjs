@@ -40,6 +40,12 @@ function buildDemoQrCodes() {
   });
 }
 
+const DEMO_PRIZE_TIERS = [
+  { prize_tier_id: "demo_tier_gold", tier_name: "Gold", token_count: 2 },
+  { prize_tier_id: "demo_tier_silver", tier_name: "Silver", token_count: 5 },
+  { prize_tier_id: "demo_tier_bronze", tier_name: "Bronze", token_count: 10 },
+];
+
 async function seedCampaign(pool) {
   await pool.query(
     `INSERT INTO campaign.campaign (campaign_id, market_id, name, status)
@@ -90,6 +96,35 @@ async function seedQrCodes(pool) {
   }
 }
 
+async function seedRewardPool(pool) {
+  for (const tier of DEMO_PRIZE_TIERS) {
+    await pool.query(
+      `INSERT INTO reward.prize_tier (prize_tier_id, campaign_id, tier_name)
+       VALUES ($1, $2, $3)
+       ON CONFLICT (prize_tier_id) DO UPDATE
+         SET campaign_id = EXCLUDED.campaign_id,
+             tier_name = EXCLUDED.tier_name`,
+      [tier.prize_tier_id, DEMO_CAMPAIGN_ID, tier.tier_name],
+    );
+    for (let i = 1; i <= tier.token_count; i += 1) {
+      const tokenId = `demo_prize_token_${tier.prize_tier_id}_${String(i).padStart(3, "0")}`;
+      await pool.query(
+        `INSERT INTO reward.prize_token (token_id, campaign_id, prize_tier_id, status, claimed_by_draw_id, claimed_at)
+         VALUES ($1, $2, $3, 'Available', NULL, NULL)
+         ON CONFLICT (token_id) DO UPDATE
+           SET campaign_id = EXCLUDED.campaign_id,
+               prize_tier_id = EXCLUDED.prize_tier_id,
+               status = 'Available',
+               claimed_by_draw_id = NULL,
+               claimed_at = NULL`,
+        [tokenId, DEMO_CAMPAIGN_ID, tier.prize_tier_id],
+      );
+    }
+  }
+  const totalTokens = DEMO_PRIZE_TIERS.reduce((sum, tier) => sum + tier.token_count, 0);
+  console.log(`PASS seed:reward-pool — ${DEMO_PRIZE_TIERS.length} tiers, ${totalTokens} prize tokens reset to Available`);
+}
+
 async function main() {
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
@@ -103,6 +138,7 @@ async function main() {
     await seedCampaign(pool);
     await seedMember(pool);
     await seedQrCodes(pool);
+    await seedRewardPool(pool);
     console.log("Seed complete.");
   } finally {
     await pool.end();

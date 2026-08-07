@@ -77,6 +77,8 @@ paths:
                 $ref: "#/components/schemas/DrawResult"
         "409":
           $ref: "#/components/responses/CanonicalError"
+        "404":
+          $ref: "#/components/responses/CanonicalError"
 
   /api/v1/reward/draws/{draw_id}:
     get:

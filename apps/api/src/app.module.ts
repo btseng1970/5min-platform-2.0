@@ -6,9 +6,10 @@ import { CorrelationMiddleware } from './observability/correlation.middleware';
 import { CampaignsModule } from './campaigns/campaigns.module';
 import { MembersModule } from './members/members.module';
 import { QrModule } from './qr/qr.module';
+import { RewardModule } from './reward/reward.module';
 
 @Module({
-  imports: [FlagsModule, DbModule, MembersModule, CampaignsModule, QrModule],
+  imports: [FlagsModule, DbModule, MembersModule, CampaignsModule, QrModule, RewardModule],
   controllers: [HealthzController],
 })
 export class AppModule implements NestModule {
