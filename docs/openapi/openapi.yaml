@@ -111,6 +111,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/WalletSummary"
+        "404":
+          $ref: "#/components/responses/CanonicalError"
 
   /api/v1/me:
     get:
@@ -234,6 +236,10 @@ components:
             prize_tier:
               type: string
               nullable: true
+            point_amount:
+              type: integer
+              nullable: true
+              description: Integer points granted, only set when result_type is POINT.
 
     WalletSummary:
       type: object

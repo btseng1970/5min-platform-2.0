@@ -50,6 +50,7 @@ export interface DrawResult {
   drawResult: {
     resultType: DrawResultType;
     prizeTier: string | null;
+    pointAmount: number | null;
   };
 }
 
@@ -98,6 +99,7 @@ type DrawLedgerRow = {
   draw_id: string;
   result_type: DrawResultType;
   prize_tier_id: string | null;
+  point_amount: number | null;
   request_fingerprint: string;
 };
 
@@ -105,7 +107,7 @@ function toDrawResult(row: DrawLedgerRow): DrawResult {
   return {
     drawId: row.draw_id,
     state: "DrawReserved",
-    drawResult: { resultType: row.result_type, prizeTier: row.prize_tier_id },
+    drawResult: { resultType: row.result_type, prizeTier: row.prize_tier_id, pointAmount: row.point_amount },
   };
 }
 
@@ -139,7 +141,7 @@ export class DrawService {
 
   async getById(drawId: string): Promise<DrawResult> {
     const result = await this.pool.query<DrawLedgerRow>(
-      `SELECT draw_id, result_type, prize_tier_id, request_fingerprint FROM reward.draw_ledger WHERE draw_id = $1`,
+      `SELECT draw_id, result_type, prize_tier_id, point_amount, request_fingerprint FROM reward.draw_ledger WHERE draw_id = $1`,
       [drawId],
     );
     const row = result.rows[0];
@@ -155,7 +157,7 @@ export class DrawService {
     fingerprint: string,
   ): Promise<DrawResult | undefined> {
     const result = await queryable.query<DrawLedgerRow>(
-      `SELECT draw_id, result_type, prize_tier_id, request_fingerprint FROM reward.draw_ledger WHERE idempotency_key = $1`,
+      `SELECT draw_id, result_type, prize_tier_id, point_amount, request_fingerprint FROM reward.draw_ledger WHERE idempotency_key = $1`,
       [idempotencyKey],
     );
     const row = result.rows[0];
@@ -245,7 +247,7 @@ export class DrawService {
     return {
       drawId,
       state: "DrawReserved",
-      drawResult: { resultType, prizeTier: prizeTierId },
+      drawResult: { resultType, prizeTier: prizeTierId, pointAmount },
     };
   }
 }

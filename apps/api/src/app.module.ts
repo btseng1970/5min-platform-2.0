@@ -7,9 +7,10 @@ import { CampaignsModule } from './campaigns/campaigns.module';
 import { MembersModule } from './members/members.module';
 import { QrModule } from './qr/qr.module';
 import { RewardModule } from './reward/reward.module';
+import { WalletModule } from './wallet/wallet.module';
 
 @Module({
-  imports: [FlagsModule, DbModule, MembersModule, CampaignsModule, QrModule, RewardModule],
+  imports: [FlagsModule, DbModule, MembersModule, CampaignsModule, QrModule, RewardModule, WalletModule],
   controllers: [HealthzController],
 })
 export class AppModule implements NestModule {

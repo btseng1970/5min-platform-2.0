@@ -1,10 +1,12 @@
 import { Controller, Get, Headers, Inject, Param, Post, Body } from "@nestjs/common";
 import { DrawService } from "@5min/domain-reward";
+import { WalletService } from "@5min/domain-wallet";
 import { CanonicalApiError } from "errors";
 import type { FlagProvider } from "@5min/shared-flags";
 import { FLAG_PROVIDER } from "../flags/flags.module";
 import { DemoMemberContextProvider } from "../members/demo-member-context.provider";
 import { getCorrelationId } from "../observability/correlation-context";
+import { WALLET_SERVICE } from "../wallet/wallet.tokens";
 import { DRAW_SERVICE } from "./reward.tokens";
 
 interface DrawRequestBody {
@@ -18,6 +20,7 @@ interface DrawResponseBody {
   draw_result: {
     result_type: string;
     prize_tier: string | null;
+    point_amount: number | null;
   };
 }
 
@@ -25,6 +28,7 @@ interface DrawResponseBody {
 export class RewardController {
   constructor(
     @Inject(DRAW_SERVICE) private readonly drawService: DrawService,
+    @Inject(WALLET_SERVICE) private readonly walletService: WalletService,
     @Inject(FLAG_PROVIDER) private readonly flags: FlagProvider,
     private readonly memberContext: DemoMemberContextProvider,
   ) {}
@@ -46,14 +50,30 @@ export class RewardController {
     }
 
     const memberId = this.memberContext.resolveMemberId();
+    const correlationId = getCorrelationId();
 
     const result = await this.drawService.draw({
       campaignId: body.campaign_id,
       memberId,
       clientRequestId: body.client_request_id,
       idempotencyKey,
-      correlationId: getCorrelationId(),
+      correlationId,
     });
+
+    // BFF-orchestrated composition, not a cross-schema SQL write: this calls
+    // WalletService's own public API, which only ever touches wallet.* —
+    // DrawService never reads or writes wallet.* itself. Idempotent per
+    // draw_id (UNIQUE(source_type, source_id) in wallet.ledger_entry), so
+    // this is safe to call unconditionally on every POINT result, including
+    // idempotent draw replays — it never double-credits.
+    if (result.drawResult.resultType === "POINT" && result.drawResult.pointAmount !== null) {
+      await this.walletService.postDrawPoints({
+        memberId,
+        drawId: result.drawId,
+        amount: result.drawResult.pointAmount,
+        correlationId,
+      });
+    }
 
     return this.toResponseBody(result);
   }
@@ -75,7 +95,11 @@ export class RewardController {
     return {
       draw_id: result.drawId,
       state: result.state,
-      draw_result: { result_type: result.drawResult.resultType, prize_tier: result.drawResult.prizeTier },
+      draw_result: {
+        result_type: result.drawResult.resultType,
+        prize_tier: result.drawResult.prizeTier,
+        point_amount: result.drawResult.pointAmount,
+      },
     };
   }
 }

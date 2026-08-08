@@ -176,11 +176,27 @@ describe("DrawService.draw", () => {
     const service = new DrawService(fakePool(state));
 
     const first = await service.draw({ campaignId: CAMPAIGN_ID, memberId: MEMBER_ID, clientRequestId: "req-5", idempotencyKey: "idem-5", correlationId: "corr-5" });
-    expect(first.drawResult).toEqual({ resultType: "PRIZE", prizeTier: "tier-gold" });
+    expect(first.drawResult).toEqual({ resultType: "PRIZE", prizeTier: "tier-gold", pointAmount: null });
     expect(state.tokens.get("token-1")?.status).toBe("Claimed");
 
     const second = await service.draw({ campaignId: CAMPAIGN_ID, memberId: MEMBER_ID, clientRequestId: "req-6", idempotencyKey: "idem-6", correlationId: "corr-6" });
-    expect(second.drawResult).toEqual({ resultType: "NO_WIN", prizeTier: null });
+    expect(second.drawResult).toEqual({ resultType: "NO_WIN", prizeTier: null, pointAmount: null });
+  });
+
+  it("carries a fixed integer point_amount when forced to POINT", async () => {
+    // Roll into the POINT bucket (cumulative weight 20..49 out of 100).
+    const randomIntMock = mockedCrypto.randomInt as jest.Mock;
+    randomIntMock.mockReturnValueOnce(25);
+
+    const state = newState([]);
+    const service = new DrawService(fakePool(state));
+
+    const result = await service.draw({ campaignId: CAMPAIGN_ID, memberId: MEMBER_ID, clientRequestId: "req-point", idempotencyKey: "idem-point", correlationId: "corr-point" });
+
+    expect(result.drawResult.resultType).toBe("POINT");
+    expect(result.drawResult.prizeTier).toBeNull();
+    expect(Number.isInteger(result.drawResult.pointAmount)).toBe(true);
+    expect(result.drawResult.pointAmount).toBeGreaterThan(0);
   });
 
   it("getById returns the stored draw result", async () => {
