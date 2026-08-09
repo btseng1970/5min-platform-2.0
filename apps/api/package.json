@@ -27,6 +27,7 @@
     "@5min/domain-qr": "*",
     "@5min/domain-reward": "*",
     "@5min/domain-wallet": "*",
+    "@5min/domain-ip-asset": "*",
     "test-fixtures": "*"
   },
   "devDependencies": {

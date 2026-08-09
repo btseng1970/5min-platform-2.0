@@ -1,12 +1,14 @@
 import { Controller, Get, Headers, Inject, Param, Post, Body } from "@nestjs/common";
 import { DrawService } from "@5min/domain-reward";
 import { WalletService } from "@5min/domain-wallet";
+import { CollectionService } from "@5min/domain-ip-asset";
 import { CanonicalApiError } from "errors";
 import type { FlagProvider } from "@5min/shared-flags";
 import { FLAG_PROVIDER } from "../flags/flags.module";
 import { DemoMemberContextProvider } from "../members/demo-member-context.provider";
 import { getCorrelationId } from "../observability/correlation-context";
 import { WALLET_SERVICE } from "../wallet/wallet.tokens";
+import { COLLECTION_SERVICE } from "../collection/collection.tokens";
 import { DRAW_SERVICE } from "./reward.tokens";
 
 interface DrawRequestBody {
@@ -29,6 +31,7 @@ export class RewardController {
   constructor(
     @Inject(DRAW_SERVICE) private readonly drawService: DrawService,
     @Inject(WALLET_SERVICE) private readonly walletService: WalletService,
+    @Inject(COLLECTION_SERVICE) private readonly collectionService: CollectionService,
     @Inject(FLAG_PROVIDER) private readonly flags: FlagProvider,
     private readonly memberContext: DemoMemberContextProvider,
   ) {}
@@ -71,6 +74,18 @@ export class RewardController {
         memberId,
         drawId: result.drawId,
         amount: result.drawResult.pointAmount,
+        correlationId,
+      });
+    }
+
+    // Same BFF-composition pattern as the wallet posting above: calls
+    // CollectionService's own public API (ip_asset.* only), idempotent per
+    // (member_id, item_id), so safe on every PRIZE result including replays.
+    if (result.drawResult.resultType === "PRIZE" && result.drawResult.prizeTier !== null) {
+      await this.collectionService.unlockFromPrizeDraw({
+        memberId,
+        prizeTierId: result.drawResult.prizeTier,
+        drawId: result.drawId,
         correlationId,
       });
     }

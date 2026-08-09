@@ -5,9 +5,10 @@ import { RewardController } from "./reward.controller";
 import { PG_POOL } from "../db/db.module";
 import { DRAW_SERVICE } from "./reward.tokens";
 import { WalletModule } from "../wallet/wallet.module";
+import { CollectionModule } from "../collection/collection.module";
 
 @Module({
-  imports: [WalletModule],
+  imports: [WalletModule, CollectionModule],
   controllers: [RewardController],
   providers: [
     {

@@ -41,9 +41,9 @@ function buildDemoQrCodes() {
 }
 
 const DEMO_PRIZE_TIERS = [
-  { prize_tier_id: "demo_tier_gold", tier_name: "Gold", token_count: 2 },
-  { prize_tier_id: "demo_tier_silver", tier_name: "Silver", token_count: 5 },
-  { prize_tier_id: "demo_tier_bronze", tier_name: "Bronze", token_count: 10 },
+  { prize_tier_id: "demo_tier_gold", tier_name: "Gold", token_count: 2, collection_item_id: "demo_item_gold", collection_item_name: "Golden Coffee Bean" },
+  { prize_tier_id: "demo_tier_silver", tier_name: "Silver", token_count: 5, collection_item_id: "demo_item_silver", collection_item_name: "Silver Coffee Bean" },
+  { prize_tier_id: "demo_tier_bronze", tier_name: "Bronze", token_count: 10, collection_item_id: "demo_item_bronze", collection_item_name: "Bronze Coffee Bean" },
 ];
 
 async function seedCampaign(pool) {
@@ -125,6 +125,21 @@ async function seedRewardPool(pool) {
   console.log(`PASS seed:reward-pool — ${DEMO_PRIZE_TIERS.length} tiers, ${totalTokens} prize tokens reset to Available`);
 }
 
+async function seedCollectionItems(pool) {
+  for (const tier of DEMO_PRIZE_TIERS) {
+    await pool.query(
+      `INSERT INTO ip_asset.collection_item (item_id, campaign_id, name, linked_prize_tier_id)
+       VALUES ($1, $2, $3, $4)
+       ON CONFLICT (item_id) DO UPDATE
+         SET campaign_id = EXCLUDED.campaign_id,
+             name = EXCLUDED.name,
+             linked_prize_tier_id = EXCLUDED.linked_prize_tier_id`,
+      [tier.collection_item_id, DEMO_CAMPAIGN_ID, tier.collection_item_name, tier.prize_tier_id],
+    );
+  }
+  console.log(`PASS seed:collection-items — ${DEMO_PRIZE_TIERS.length} items, one per prize tier (unlock state is not reset — earned unlocks persist across reseed)`);
+}
+
 async function main() {
   const databaseUrl = process.env.DATABASE_URL;
   if (!databaseUrl) {
@@ -139,6 +154,7 @@ async function main() {
     await seedMember(pool);
     await seedQrCodes(pool);
     await seedRewardPool(pool);
+    await seedCollectionItems(pool);
     console.log("Seed complete.");
   } finally {
     await pool.end();
