@@ -125,6 +125,8 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MemberCenterSummary"
+        "404":
+          $ref: "#/components/responses/CanonicalError"
 
 components:
   responses:
@@ -250,9 +252,11 @@ components:
 
     MemberCenterSummary:
       type: object
-      required: [member_id, wallet_summary, collection]
+      required: [member_id, display_name, wallet_summary, collection]
       properties:
         member_id:
+          type: string
+        display_name:
           type: string
         wallet_summary:
           $ref: "#/components/schemas/WalletSummary"

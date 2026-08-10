@@ -8,9 +8,10 @@ import { MembersModule } from './members/members.module';
 import { QrModule } from './qr/qr.module';
 import { RewardModule } from './reward/reward.module';
 import { WalletModule } from './wallet/wallet.module';
+import { MemberCenterModule } from './member-center/member-center.module';
 
 @Module({
-  imports: [FlagsModule, DbModule, MembersModule, CampaignsModule, QrModule, RewardModule, WalletModule],
+  imports: [FlagsModule, DbModule, MembersModule, CampaignsModule, QrModule, RewardModule, WalletModule, MemberCenterModule],
   controllers: [HealthzController],
 })
 export class AppModule implements NestModule {

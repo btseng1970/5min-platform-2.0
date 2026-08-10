@@ -14,5 +14,6 @@ import { CAMPAIGN_SERVICE } from "./campaigns.tokens";
       inject: [PG_POOL],
     },
   ],
+  exports: [CAMPAIGN_SERVICE],
 })
 export class CampaignsModule {}
