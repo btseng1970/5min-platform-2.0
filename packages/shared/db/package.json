@@ -11,5 +11,8 @@
   },
   "devDependencies": {
     "@types/pg": "8.20.3"
+  },
+  "scripts": {
+    "test": "jest"
   }
 }

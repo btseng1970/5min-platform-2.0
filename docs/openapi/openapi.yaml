@@ -4,12 +4,13 @@ info:
   version: 0.1.0
   description: >
     Contract-first OpenAPI definition for PROTO-001's six authoritative
-    member-facing routes (docs/codex-task-packages/PROTO-001.md §7). NestJS
-    route implementation must conform to this document; this file is the
-    source of truth, not the reverse (Codex Development Specification §6).
-    Collection data is composed into GET /api/v1/me for the Prototype;
-    GET /api/v1/collection and GET /admin/api/v1/audit-log remain proposed,
-    unconfirmed routes and are not implemented here.
+    member-facing routes (docs/codex-task-packages/PROTO-001.md §7), plus
+    the internal admin correlation trace route named as a proposal in §56
+    and implemented as PROTO-001H. NestJS route implementation must
+    conform to this document; this file is the source of truth, not the
+    reverse (Codex Development Specification §6). Collection data is
+    composed into GET /api/v1/me for the Prototype; GET /api/v1/collection
+    remains a proposed, unconfirmed route and is not implemented here.
 
 paths:
   /api/v1/campaigns/current:
@@ -125,6 +126,34 @@ paths:
             application/json:
               schema:
                 $ref: "#/components/schemas/MemberCenterSummary"
+        "404":
+          $ref: "#/components/responses/CanonicalError"
+
+  /admin/api/v1/audit-log:
+    get:
+      operationId: getAdminAuditLog
+      summary: >
+        Internal, feature-gated (proto_admin_trace), read-only trace of
+        every platform.event_outbox row for one correlation_id. Not under
+        the /api/v1 prefix. No standalone auth mechanism in this internal
+        Prototype — the feature flag is the sole gate.
+      parameters:
+        - name: correlation_id
+          in: query
+          required: true
+          schema:
+            type: string
+      responses:
+        "200":
+          description: Every outbox event recorded under this correlation_id, oldest first
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: "#/components/schemas/AuditLogEntry"
+        "400":
+          $ref: "#/components/responses/CanonicalError"
         "404":
           $ref: "#/components/responses/CanonicalError"
 
@@ -270,3 +299,31 @@ components:
                 type: string
               unlocked:
                 type: boolean
+
+    AuditLogEntry:
+      type: object
+      required: [event_id, event_type, aggregate_type, aggregate_id, status, correlation_id, causation_id, created_at, published_at]
+      properties:
+        event_id:
+          type: string
+        event_type:
+          type: string
+        aggregate_type:
+          type: string
+        aggregate_id:
+          type: string
+        status:
+          type: string
+          enum: [PENDING, PUBLISHED, FAILED, DEAD]
+        correlation_id:
+          type: string
+        causation_id:
+          type: string
+          nullable: true
+        created_at:
+          type: string
+          format: date-time
+        published_at:
+          type: string
+          format: date-time
+          nullable: true

@@ -70,3 +70,58 @@ export async function writeOutboxEvent(
     ],
   );
 }
+
+export interface OutboxEventRecord {
+  eventId: string;
+  eventType: string;
+  aggregateType: string;
+  aggregateId: string;
+  status: string;
+  correlationId: string;
+  causationId: string | null;
+  createdAt: Date;
+  publishedAt: Date | null;
+}
+
+/**
+ * Reads platform.event_outbox by correlation_id — the read side of the
+ * PROTO-001H internal admin correlation trace. platform.event_outbox is
+ * cross-cutting platform infrastructure, not any single bounded context's
+ * owned table (the same rationale that makes writing to it the Cross-schema
+ * Write Ban's sole exception), so reading it here does not cross a domain
+ * boundary the way reading another context's own tables would.
+ */
+export async function queryOutboxEventsByCorrelationId(
+  pool: Pool,
+  correlationId: string,
+): Promise<OutboxEventRecord[]> {
+  const result = await pool.query<{
+    event_id: string;
+    event_type: string;
+    aggregate_type: string;
+    aggregate_id: string;
+    status: string;
+    correlation_id: string;
+    causation_id: string | null;
+    created_at: Date;
+    published_at: Date | null;
+  }>(
+    `SELECT event_id, event_type, aggregate_type, aggregate_id, status,
+            correlation_id, causation_id, created_at, published_at
+     FROM platform.event_outbox
+     WHERE correlation_id = $1
+     ORDER BY created_at ASC`,
+    [correlationId],
+  );
+  return result.rows.map((row) => ({
+    eventId: row.event_id,
+    eventType: row.event_type,
+    aggregateType: row.aggregate_type,
+    aggregateId: row.aggregate_id,
+    status: row.status,
+    correlationId: row.correlation_id,
+    causationId: row.causation_id,
+    createdAt: row.created_at,
+    publishedAt: row.published_at,
+  }));
+}
