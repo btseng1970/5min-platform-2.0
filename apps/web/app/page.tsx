@@ -1,6 +1,14 @@
+import { JourneyPanel } from "./journey-panel";
+
+// Matches apps/api's actual wire contract (docs/openapi/openapi.yaml's
+// CampaignSummary schema) — snake_case, not camelCase. A prior version of
+// this file used camelCase field names left over from before PROTO-001C's
+// forward-fix corrected the controller's response shape to match the
+// documented contract; that mismatch silently rendered "Market: undefined"
+// since fetch().json() returns `any` and TypeScript could not catch it.
 interface CampaignSummary {
-  campaignId: string;
-  marketId: string;
+  campaign_id: string;
+  market_id: string;
   name: string;
   status: string;
 }
@@ -26,8 +34,9 @@ export default async function Page() {
   return (
     <main>
       <h1>{campaign.name}</h1>
-      <p>Market: {campaign.marketId}</p>
+      <p>Market: {campaign.market_id}</p>
       <p>Status: {campaign.status}</p>
+      <JourneyPanel campaignId={campaign.campaign_id} />
     </main>
   );
 }

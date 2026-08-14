@@ -20,6 +20,13 @@ function loadDevelopmentEnvIfPresent(): void {
 async function bootstrap() {
   loadDevelopmentEnvIfPresent();
   const app = await NestFactory.create(AppModule);
+  // Reflects the request's Origin header rather than a fixed allowlist —
+  // acceptable for this internal Prototype (no production deployment
+  // exists yet, no production PII, no payment); apps/web's browser-side
+  // journey panel needs this to call the API from a different dev-server
+  // port. Not gated by a Prototype flag: this is transport-level wiring,
+  // not domain behavior.
+  app.enableCors({ origin: true });
   app.useGlobalFilters(new CanonicalExceptionFilter());
   app.setGlobalPrefix('api/v1', { exclude: ['healthz', 'admin/api/v1/audit-log'] });
   const port = process.env.PORT ?? 3000;
