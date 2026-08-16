@@ -1,27 +1,16 @@
 import { JourneyPanel } from "./journey-panel";
+import { createApiClient, type CampaignSummary } from "api-contract";
 
-// Matches apps/api's actual wire contract (docs/openapi/openapi.yaml's
-// CampaignSummary schema) — snake_case, not camelCase. A prior version of
-// this file used camelCase field names left over from before PROTO-001C's
-// forward-fix corrected the controller's response shape to match the
-// documented contract; that mismatch silently rendered "Market: undefined"
-// since fetch().json() returns `any` and TypeScript could not catch it.
-interface CampaignSummary {
-  campaign_id: string;
-  market_id: string;
-  name: string;
-  status: string;
-}
-
+// Consumes the BFF only through packages/shared/api-contract's typed
+// client (GA-015) — never a hand-rolled fetch()/interface pair. That
+// duplication was exactly what let this page silently render
+// "Market: " (blank) for several commits after PROTO-001C's controller
+// response shape changed to snake_case (fixed in 87e29ae).
 async function getCurrentCampaign(): Promise<CampaignSummary | null> {
   const apiBaseUrl = process.env.API_BASE_URL ?? "http://localhost:3000";
-  const response = await fetch(`${apiBaseUrl}/api/v1/campaigns/current`, {
-    cache: "no-store",
-  });
-  if (!response.ok) {
-    return null;
-  }
-  return response.json();
+  const client = createApiClient(apiBaseUrl);
+  const result = await client.getCurrentCampaign();
+  return result.ok ? result.body : null;
 }
 
 export default async function Page() {

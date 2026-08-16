@@ -2,9 +2,8 @@ import { Controller, Get, Inject, Query } from "@nestjs/common";
 import { queryOutboxEventsByCorrelationId, type OutboxEventRecord } from "@5min/shared-db";
 import type { Pool } from "pg";
 import { CanonicalApiError } from "errors";
-import type { FlagProvider } from "@5min/shared-flags";
-import { FLAG_PROVIDER } from "../flags/flags.module";
 import { PG_POOL } from "../db/db.module";
+import { InternalDemoAdminContext } from "./internal-demo-admin-context";
 
 interface AuditLogEntryResponseBody {
   event_id: string;
@@ -20,19 +19,20 @@ interface AuditLogEntryResponseBody {
 
 // Internal admin route only — deliberately not under the /api/v1 prefix
 // (excluded in main.ts's setGlobalPrefix call). No standalone auth
-// mechanism exists for this internal Prototype; the feature flag is the
-// sole gate, matching the rest of this Prototype's unauthenticated-
-// internal-demo scope.
+// mechanism exists for this internal Prototype; InternalDemoAdminContext's
+// double-flag gate (proto_internal_demo_runtime AND proto_admin_trace) is
+// the sole gate, matching the rest of this Prototype's unauthenticated-
+// internal-demo scope. No caller-supplied role/identity is ever consulted.
 @Controller("admin/api/v1/audit-log")
 export class AdminController {
   constructor(
     @Inject(PG_POOL) private readonly pool: Pool,
-    @Inject(FLAG_PROVIDER) private readonly flags: FlagProvider,
+    private readonly adminContext: InternalDemoAdminContext,
   ) {}
 
   @Get()
   async getAuditLog(@Query("correlation_id") correlationId: string | undefined): Promise<AuditLogEntryResponseBody[]> {
-    if (!this.flags.isEnabled("proto_admin_trace")) {
+    if (!this.adminContext.isAvailable()) {
       throw new CanonicalApiError("RESOURCE_NOT_FOUND", "Admin correlation trace is not enabled.");
     }
     if (typeof correlationId !== "string" || correlationId.length === 0) {

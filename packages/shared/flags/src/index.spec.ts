@@ -29,6 +29,7 @@ describe("EnvFlagProvider", () => {
       "proto_collection",
       "proto_member_center",
       "proto_admin_trace",
+      "proto_internal_demo_runtime",
     ] as const) {
       expect(provider.isEnabled(flag)).toBe(false);
     }

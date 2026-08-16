@@ -1,6 +1,7 @@
 "use client";
 
-import { useState } from "react";
+import { useMemo, useState } from "react";
+import { createApiClient } from "api-contract";
 
 const API_BASE_URL = process.env.NEXT_PUBLIC_API_BASE_URL ?? "http://localhost:3000";
 
@@ -14,16 +15,11 @@ interface ResultBlock {
   body: unknown;
 }
 
-async function callApi(
-  path: string,
-  init: RequestInit,
-): Promise<{ ok: boolean; status: number; body: unknown }> {
-  const response = await fetch(`${API_BASE_URL}${path}`, init);
-  const body = await response.json().catch(() => null);
-  return { ok: response.ok, status: response.status, body };
-}
-
 export function JourneyPanel({ campaignId }: JourneyPanelProps) {
+  // Consumes the BFF only through packages/shared/api-contract's typed
+  // client (GA-015) — never an independently shaped fetch() call.
+  const client = useMemo(() => createApiClient(API_BASE_URL), []);
+
   const [correlationId, setCorrelationId] = useState<string>("");
   const [qrCode, setQrCode] = useState("SIGNED-DEMO-QR-TW-001");
   const [idempotencyKey, setIdempotencyKey] = useState<string>("");
@@ -42,38 +38,31 @@ export function JourneyPanel({ campaignId }: JourneyPanelProps) {
   }
 
   async function scanQr() {
-    const result = await callApi("/api/v1/qr/scan", {
-      method: "POST",
-      headers: { "Content-Type": "application/json", "x-correlation-id": correlationId },
-      body: JSON.stringify({ code: qrCode, client_request_id: crypto.randomUUID() }),
-    });
+    const result = await client.scanQr(
+      { code: qrCode, client_request_id: crypto.randomUUID() },
+      { correlationId },
+    );
     pushResult("1. Scan QR", result.ok, result.body);
   }
 
   async function triggerDraw(reuseIdempotencyKey: boolean) {
     const key = reuseIdempotencyKey ? idempotencyKey : crypto.randomUUID();
     if (!reuseIdempotencyKey) setIdempotencyKey(key);
-    const result = await callApi("/api/v1/reward/draws", {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        "x-correlation-id": correlationId,
-        "Idempotency-Key": key,
-      },
-      body: JSON.stringify({ campaign_id: campaignId, client_request_id: crypto.randomUUID() }),
-    });
+    const result = await client.createDraw(
+      { campaign_id: campaignId, client_request_id: crypto.randomUUID() },
+      key,
+      { correlationId },
+    );
     pushResult(reuseIdempotencyKey ? "2b. Replay same draw (idempotent)" : "2. Trigger draw", result.ok, result.body);
   }
 
   async function refreshMemberCenter() {
-    const result = await callApi("/api/v1/me", {
-      headers: { "x-correlation-id": correlationId },
-    });
+    const result = await client.getMemberCenter({ correlationId });
     pushResult("3. Member center", result.ok, result.body);
   }
 
   async function viewTrace() {
-    const result = await callApi(`/admin/api/v1/audit-log?correlation_id=${encodeURIComponent(correlationId)}`, {});
+    const result = await client.getAdminAuditLog(correlationId);
     pushResult("4. Correlation trace", result.ok, result.body);
   }
 

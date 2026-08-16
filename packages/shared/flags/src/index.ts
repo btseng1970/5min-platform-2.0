@@ -12,7 +12,14 @@ export type PrototypeFlagName =
   | "proto_wallet_grant"
   | "proto_collection"
   | "proto_member_center"
-  | "proto_admin_trace";
+  | "proto_admin_trace"
+  // Deliberately separate from every per-feature flag above: this asserts
+  // "this host is a valid internal-demo runtime at all," not "this one
+  // feature is on." The admin correlation trace (apps/api's AdminController)
+  // requires both this flag AND proto_admin_trace, so a production runtime
+  // can never expose that route merely by someone flipping proto_admin_trace
+  // on — a second, independent opt-in is required.
+  | "proto_internal_demo_runtime";
 
 export const ALL_PROTOTYPE_FLAGS: readonly PrototypeFlagName[] = [
   "proto_campaign_shell",
@@ -23,6 +30,7 @@ export const ALL_PROTOTYPE_FLAGS: readonly PrototypeFlagName[] = [
   "proto_collection",
   "proto_member_center",
   "proto_admin_trace",
+  "proto_internal_demo_runtime",
 ];
 
 export interface FlagProvider {
